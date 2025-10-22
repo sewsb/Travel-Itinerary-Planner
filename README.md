@@ -19,4 +19,4 @@ Plan, visualize, and share your travel routes interactively with a **map-based i
 
 1. Clone the repository:  
 ```bash
-git clone https://github.com/swesthika/travel-itinerary-planner.git
+git clone https://github.com/sewsb/travel-itinerary-planner.git
