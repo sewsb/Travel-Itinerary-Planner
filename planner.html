@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Itinerary Planner</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 30px;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .trip-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input, select {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #6C63FF;
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #584be8;
+    }
+
+    .trip-list {
+      margin-top: 30px;
+    }
+
+    .trip-card {
+      background: #f9f9ff;
+      border-left: 6px solid #6C63FF;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .trip-info {
+      max-width: 70%;
+    }
+
+    .trip-info h3 {
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .trip-actions button {
+      margin-left: 8px;
+      background: #48C6EF;
+    }
+
+    .trip-actions button.delete {
+      background: #ff6b6b;
+    }
+
+    .trip-actions button:hover {
+      opacity: 0.9;
+    }
+
+    .summary {
+      margin-top: 30px;
+      text-align: center;
+      padding: 15px;
+      background: #e9f5ff;
+      border-radius: 10px;
+    }
+
+    .save-btn {
+      background: #4CAF50;
+      margin-top: 15px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    @media (max-width: 768px) {
+      .trip-form {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌍 Travel Itinerary Planner</h1>
+
+    <div class="trip-form">
+      <input type="text" id="destination" placeholder="Destination">
+      <input type="date" id="startDate">
+      <input type="date" id="endDate">
+      <select id="transport">
+        <option value="">Transport</option>
+        <option>Flight</option>
+        <option>Train</option>
+        <option>Car</option>
+        <option>Bus</option>
+      </select>
+      <button onclick="addTrip()">Add</button>
+    </div>
+
+    <div class="trip-list" id="tripList"></div>
+
+    <div class="summary" id="tripSummary">
+      <h3>Total Destinations: 0</h3>
+      <p>Plan your dream trip easily and track all your stops here!</p>
+    </div>
+
+    <button class="save-btn" onclick="saveTrips()">💾 Save Itinerary</button>
+  </div>
+
+  <script>
+    let trips = JSON.parse(localStorage.getItem('trips')) || [];
+
+    function renderTrips() {
+      const list = document.getElementById('tripList');
+      const summary = document.getElementById('tripSummary');
+      list.innerHTML = '';
+      summary.innerHTML = `<h3>Total Destinations: ${trips.length}</h3>`;
+
+      trips.forEach((trip, index) => {
+        const card = document.createElement('div');
+        card.className = 'trip-card';
+        card.innerHTML = `
+          <div class="trip-info">
+            <h3>${trip.destination}</h3>
+            <p><strong>From:</strong> ${trip.startDate} | <strong>To:</strong> ${trip.endDate}</p>
+            <p><strong>Transport:</strong> ${trip.transport}</p>
+          </div>
+          <div class="trip-actions">
+            <button onclick="viewMap('${trip.destination}')">🗺️ View Map</button>
+            <button onclick="editTrip(${index})">✏️ Edit</button>
+            <button class="delete" onclick="deleteTrip(${index})">🗑️ Delete</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function addTrip() {
+      const destination = document.getElementById('destination').value.trim();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const transport = document.getElementById('transport').value;
+
+      if (!destination || !startDate || !endDate || !transport) {
+        alert('Please fill all fields!');
+        return;
+      }
+
+      trips.push({ destination, startDate, endDate, transport });
+      renderTrips();
+      clearForm();
+    }
+
+    function editTrip(index) {
+      const trip = trips[index];
+      document.getElementById('destination').value = trip.destination;
+      document.getElementById('startDate').value = trip.startDate;
+      document.getElementById('endDate').value = trip.endDate;
+      document.getElementById('transport').value = trip.transport;
+      trips.splice(index, 1);
+      renderTrips();
+    }
+
+    function deleteTrip(index) {
+      if (confirm('Are you sure you want to delete this destination?')) {
+        trips.splice(index, 1);
+        renderTrips();
+      }
+    }
+
+    function saveTrips() {
+      localStorage.setItem('trips', JSON.stringify(trips));
+      alert('Itinerary saved successfully!');
+    }
+
+    function viewMap(destination) {
+      const mapUrl = `https://www.google.com/maps/search/${encodeURIComponent(destination)}`;
+      window.open(mapUrl, '_blank');
+    }
+
+    function clearForm() {
+      document.getElementById('destination').value = '';
+      document.getElementById('startDate').value = '';
+      document.getElementById('endDate').value = '';
+      document.getElementById('transport').value = '';
+    }
+
+    renderTrips();
+  </script>
+</body>
+</html>
